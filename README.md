@@ -320,7 +320,6 @@ Product project.xlsx
 
 | Dashboard View | Description |
 |---------------|-------------|
-[![Overall](.png)
 | (https://1drv.ms/i/c/5c6c50a2fd2850a8/IQA_qXA4g69SRq9y3pCNkM9KARUTAS3PyCygllGOlyJCDXU?e=zA347h) | Full dashboard overview |
 
 ---
