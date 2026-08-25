@@ -1,175 +1,337 @@
-# 🍫 Product Sales Performance Dashboard (Excel)
 
-An advanced, single-page interactive Excel sales dashboard covering **overall business summary, geographical performance, team & people performance, and product performance** — built on a relational data model (Power Pivot style) with dynamic sorting, KPI trend cards, in-cell mini-charts, and map visuals. Built to demonstrate advanced Excel / BI skills for Data Analyst roles.
+# 🍫 Chocolate Sales Dashboard (Excel)
 
----
-
-## 📌 Project Overview
-
-The workbook analyzes **3,791 sales transactions** (Jan 2021 – Jan 2022, ~$21.7M in sales) for a chocolate/confectionery business sold across 6 countries by 4 sales teams. Instead of one flat table, the data is split into **4 related tables** (Sales, Products, Locations, People) linked together like a mini database — the same design principle used in Power Pivot / Power BI data models — and the dashboard lets the viewer resort and filter the view without touching a single chart manually.
+> **End-to-end Excel dashboard** built using Power Pivot, advanced formulas, dynamic arrays, and custom visual design.  
+> A complete business intelligence solution for tracking chocolate sales across 6 countries, 4 teams, and 22 products.
 
 ---
 
-## 🗂️ Workbook Structure
+## 📊 Project Overview
 
-| Sheet | Purpose |
-|---|---|
-| **Data sheet** | 4 linked Excel Tables: `sales` (transactions), `products`, `locations`, `people` |
-| **calculation sheet** | The engine — 200+ formulas computing every KPI, sparkline series, sort order, and map lookup used on the dashboard |
-| **Dashboard** | The final interactive report: KPI cards, country map tiles, team/people leaderboard, and product performance table |
-| **images** | Country map icons (used as visual tiles per country) + the dashboard's color/style palette |
+This dashboard provides a **360-degree view** of chocolate sales performance. It was built entirely in Excel (no Power BI, no external tools) to demonstrate advanced Excel capabilities including:
 
-**Relational data model** (like a star schema):
-- `sales` — Sales Person, Geography, Product, Date, Amount, Customers, Boxes (3,791 rows)
-- `products` — Product, Category, Size, Cost per Box (22 products across Bars / Bites / Other)
-- `locations` — Geo, Region (6 countries mapped to APAC / Americas / Europe)
-- `people` — Sales person, Team (26 people across 4 teams: Yummies, Delish, Jucies, Tempo)
+- **Power Pivot Data Modeling**
+- **Dynamic Array Functions** (Excel 365)
+- **Advanced Conditional Formatting**
+- **Custom Number Formatting**
+- **Sparklines & Mini Charts**
+- **Interactive Slicers**
+- **Named Ranges & Structured References**
 
----
-
-## 🧮 Formulas Used
-
-### 1. Latest date & rolling trend window
-```excel
-=MAX(sales[Date])
-=I3-28
-```
-`MAX()` finds the most recent transaction date in the whole `sales` Table. Subtracting 28 pulls a "4 weeks ago" date — used to define the rolling trend window shown in the KPI sparklines, so the dashboard always trends the most recent month regardless of when it's opened.
-
-### 2. Slicer selection label — `COUNTA` + `CHOOSE`
-```excel
-=COUNTA(C4:C6)
-=CHOOSE(E4,C4,"(multiple)","(All)")
-```
-`COUNTA` counts how many category values are currently selected in the slicer. `CHOOSE` then picks what label to display: if exactly 1 is selected → show that category's name; if 2 → show "(multiple)"; if all 3 → show "(All)". This is how the dashboard's title bar dynamically shows what you're currently filtering on.
-
-### 3. Month-over-Month % change
-```excel
-=D30/E30-1
-```
-Classic percentage-change formula: (this period ÷ previous period) − 1. Used across every KPI card (Sales, Boxes, Shipments, Cost, Profit, Profit %) to show the up/down trend arrow.
-
-### 4. Conditional text formatting — `TEXT` + `IF`
-```excel
-=TEXT(H30,$K30)
-=IF($E$4=3,"",TEXT(I30,$K30))
-```
-`TEXT(value, format_code)` renders a raw number using a custom number format stored in another cell (so currency, %, or plain-number formatting can be swapped centrally). The `IF($E$4=3,"",...)` hides the "selected category" figure entirely when "(All)" categories are chosen, since a selected-vs-all comparison wouldn't make sense.
-
-### 5. `XMATCH` — modern lookup for sorting & map selection
-```excel
-=XMATCH(K56, sort.option.countrylist)
-=XMATCH($K$56, country.names)
-```
-`XMATCH` finds the position of a value inside a list — used here (a) to find where the user's chosen sort option sits in a list of options, and (b) to find which row a selected country occupies in the country list, so the correct map image can be pulled for it.
-
-### 6. `INDEX` — pulling the matching map image
-```excel
-map.1 = INDEX(country.images, 'calculation sheet'!$P$63)
-```
-Once `XMATCH` finds *which* country is selected, `INDEX` returns the image stored at that position from a named range of country map icons — this is how the geography section swaps in the correct country map automatically.
-
-### 7. Dynamic labels with `&` and `UPPER`
-```excel
-="COUNTRY " & UPPER(K56)
-```
-Builds a dynamic title like "COUNTRY UK" by joining static text with the selected country name, forced to uppercase for consistent styling.
-
-### 8. Highlighting the selected series — `IF` + `NA()`
-```excel
-=IF(G84=$H$89, L84, NA())
-```
-Compares each row's label against the one currently selected (e.g., selected team). If it matches, the real value is returned; otherwise `NA()` is returned, which Excel's in-cell mini-charts/conditional formatting simply skip — this is how the dashboard "highlights" just the selected team or product without extra chart series.
-
-### 9. Building a multi-line data-label — `TEXTJOIN` + `CHAR(10)`
-```excel
-=TEXTJOIN(CHAR(10), , G84, H92, I92)
-```
-Joins several values with a line-break character (`CHAR(10)`) between them instead of a normal separator — producing a stacked, multi-line label inside a single cell (name on line 1, value on line 2, etc.), a common trick for compact KPI tiles.
-
-### 10. Building continuous date sequences for trend charts
-```excel
-=starting.date.for.trend+1
-(then each next cell = the cell before it + 1)
-```
-Starting from a named "trend start date," each subsequent cell just adds one day — generating a clean, continuous date axis for the sparkline/trend visuals across many columns.
-
-### 11. `MROUND` — clean axis scaling
-```excel
-=MROUND(MAX(J100:J112)*2, 100000)
-```
-Finds the largest value in a range, doubles it (to leave headroom), then rounds it to the nearest 100,000 using `MROUND` — used to set a clean, round maximum scale for the in-cell bar/gauge visuals so bars never look cramped or overflow.
-
-### 12. Counting selections — `COUNTIFS`
-```excel
-=COUNTIFS($C$4:$C$7, C135)
-```
-Counts how many times a category appears within the current slicer selection range — used to check whether a given category/team/product is part of what's currently filtered, driving highlight logic elsewhere.
-
-### 13. Toggle logic — `IF` returning ±1
-```excel
-=IF(K124=1, 1, -1)
-=IF(K153="Product", 1, -1)
-```
-Converts a selection into a `+1`/`-1` flag — commonly used to flip a sort order (ascending vs. descending) or a chart's direction based on what the user picked from a dropdown, without needing separate formulas for each direction.
-
-### 14. Building sortable/labelled lists dynamically
-```excel
-=C135 & IF(H135, $J$133, "")
-```
-Appends a marker (e.g., an arrow or highlight symbol) onto a label only when a condition is true (`H135` is truthy) — used to flag the currently-active sort column in list headers.
+### Business Context
+A chocolate company sells 22 different products across 6 countries through 25 salespeople organized into 4 teams. The dashboard answers:
+- How is overall business performing? (KPIs + MoM trends)
+- Which countries are top performers? (Geography + Maps)
+- Which team and people are driving sales? (Bubble chart + rankings)
+- Which products are most profitable? (Category slicer + sparklines)
 
 ---
 
-## 📊 Dashboard Components
+## 🗂️ Data Model (Star Schema)
 
-The **Dashboard** sheet is organized into 4 sections, matching the brief noted in the workbook itself:
+The project uses a **Star Schema** with 1 fact table and 3 dimension tables, connected via Power Pivot relationships.
 
-1. **Overall Business Summary** — KPI cards for Sales, Boxes, Shipments, Cost, Profit, and Profit % with month-over-month trend indicators and mini sparkline trends
-2. **Geographical Performance** — country tiles (Australia, Canada, India, New Zealand, UK, USA) with map icons that update based on the country selected, sorted by Sales or Profit
-3. **Team & People Performance** — a sortable leaderboard of sales teams (Yummies, Delish, Jucies, Tempo) and individual salespeople, with the selected team highlighted
-4. **Product Performance** — product-level breakdown by category (Bars, Bites, Other), sortable and filterable by category slicer, with a "Profit Indicator" toggle
+| Table | Type | Rows | Columns | Key Field |
+|-------|------|------|---------|-----------|
+| **`sales`** | Fact Table | 3,791 | Sales Person, Geography, Product, Date, Amount, Customers, Boxes | — |
+| **`products`** | Dimension | 22 | Product, Category, Size, Cost per Box | Product |
+| **`locations`** | Dimension | 6 | Geo, Region | Geo |
+| **`people`** | Dimension | 25 | Sales Person, Team | Sales Person |
 
-Every section responds to the shared slicers/selection cells, so choosing a category, team, or sort order updates KPI cards, highlighted bars, map tiles, and labels together — without needing separate charts per filter combination.
+### Relationships
+```
+sales[Product]     ──→ products[Product]
+sales[Geography]   ──→ locations[Geo]
+sales[Sales Person] ──→ people[Sales Person]
+```
 
----
-
-## 📈 Key Dataset Stats
-
-- **3,791 transactions**, Jan 2021 – Jan 2022, across **6 countries** (Australia, Canada, India, New Zealand, UK, USA)
-- **Total sales: ~$21.7M** | Total profit: ~$15.0M (≈69% profit margin)
-- **22 products** across 3 categories: Bars (11), Bites (7), Other (4)
-- **26 salespeople** across **4 teams**: Yummies (9), Delish (7), Jucies (5), Tempo (4)
-- Countries roll up into 3 regions: APAC (Australia, India, New Zealand), Americas (USA, Canada), Europe (UK)
-
----
-
-## 🛠️ Tools & Skills Used
-
-- Microsoft Excel
-- Relational data modeling (multiple linked Tables, star-schema style)
-- Advanced formulas: `XMATCH`, `INDEX`, `MROUND`, `TEXTJOIN`, `COUNTIFS`, `CHOOSE`, `COUNTA`, nested `IF`, dynamic named ranges
-- KPI cards with month-over-month % trend logic
-- In-cell mini-visuals (sparklines, conditional-formatting bars) instead of standard charts
-- Dynamic image/map lookups tied to slicer selections
-- Custom number formats & centralized style/color palette
-- Interactive, formula-driven filtering (no VBA)
+### Profit Calculation Logic
+```
+Total Cost      = SUM(Boxes × Cost per Box)   [from products table via relationship]
+Total Profit    = Total Amount − Total Cost
+Profit %        = Total Profit / Total Amount
+```
 
 ---
 
-## 📂 How to Use
+## 🧮 Formulas & Logic — Section by Section
 
-1. Download/clone this repository.
-2. Open `Product_project.xlsx` in Microsoft Excel.
-3. Go to the **Dashboard** sheet to view the final report.
-4. Use the slicers/dropdowns (Category, Team, Sort by) to see the KPI cards, highlighted bars, and map tiles update live.
-5. Explore the **calculation sheet** to see how each visual and KPI is built from the underlying `sales`, `products`, `locations`, and `people` Tables.
+### 1. Slicer & Dynamic Text (Row 2–4)
+
+| Cell | Formula | Purpose |
+|------|---------|---------|
+| `I3` | `=MAX(sales[Date])` | Gets the latest date in the dataset (e.g., 44592 = Jan 2022) |
+| `I4` | `=I3-28` | Calculates date 28 days ago for "Last 28 Days" trends |
+| `E4` | `=COUNTA(C4:C6)` | Counts how many categories are selected in the slicer |
+| `F4` | `=CHOOSE(E4, C4, "(multiple)", "(All)")` | Displays the slicer status: single name, "(multiple)", or "(All)" |
+
+**Why CHOOSE?**  
+Dashboard dynamically shows what the user selected. If 1 category → show its name. If 2+ → show "(multiple)". If all → show "(All)".
+
+---
+
+### 2. Monthly Summary Pivot (Row 6–17)
+
+This section extracts monthly totals using **Power Pivot measures** or `SUMIFS`:
+
+| Metric | Calculation |
+|--------|-------------|
+| Sum of Amount | `=SUM(sales[Amount])` grouped by Year-Month |
+| Sum of Boxes | `=SUM(sales[Boxes])` grouped by Year-Month |
+| Total shipments | `=COUNT(sales[Date])` per month |
+| Total Cost | `=SUMPRODUCT(sales[Boxes], products[Cost per Box])` |
+| Total Profit | `=Amount − Cost` |
+| Profit % | `=Profit / Amount` |
+
+> **Note:** Dates are Excel serial numbers (44197 ≈ Jan 2021, 44592 ≈ Jan 2022).
+
+---
+
+### 3. KPI Cards — Top Summary (Row 19–30)
+
+Six KPI cards show overall business health with **Month-over-Month % change**:
+
+| KPI | Formula | Format Code |
+|-----|---------|-------------|
+| **Total Amount** | `=SUM(sales[Amount])` | `$#,,.00 "m"` → `$21.70 m` |
+| **Boxes** | `=SUM(sales[Boxes])` | `#,#,.0 "k"` → `1,344.6 k` |
+| **Shipments** | `=COUNTA(sales[Date])` | `#,##` → `3,791` |
+| **Total Cost** | `=SUMPRODUCT(Boxes, Cost per Box)` | `$#,,.00 "m"` → `$6.68 m` |
+| **Total Profit** | `=Amount − Cost` | `$#,,.00 "m"` → `$15.02 m` |
+| **Profit %** | `=Profit / Amount` | `#0.0%` → `69.2%` |
+
+**Month-over-Month (MoM) %:**
+```excel
+MoM % = (This Month − Previous Month) / Previous Month
+```
+- Positive = 🟢 Green arrow (business growing)
+- Negative = 🔴 Red arrow (business declining)
+
+---
+
+### 4. Geography / Maps Section (Row 52–68)
+
+**6 countries** dynamically sorted by user-selected criteria:
+
+| Column | Purpose |
+|--------|---------|
+| Row Labels | Country names (Australia, Canada, India, New Zealand, UK, USA) |
+| Sum of Amount | Total sales per country |
+| Profit % | Profit margin per country |
+| Map ID# | Assigned number (1–6) for image lookup |
+
+**Dynamic Sorting:**
+- Named range `sort.option.countrylist` controls sort order
+- User can sort by **Sales** or **Profit %**
+
+**Map Images:**
+```excel
+=INDEX(country.images, calculation_sheet!P63)
+```
+- `country.images` = Named range containing 6 country map PNGs
+- `P63` = Map ID# from sorted list
+- Result: Each country gets its correct map icon dynamically
+
+**Dashboard Display Format:**
+```
+New Zealand    $3.78 m    $1.27 m    [map icon]
+India          $3.76 m    $1.14 m    [map icon]
+UK             $3.59 m    $1.13 m    [map icon]
+```
+
+---
+
+### 5. Team & People Performance (Row 80–100)
+
+#### Bubble Chart Data
+
+| Team | Sales | Profit | x | y | Size |
+|------|-------|--------|---|---|------|
+| Yummies | $7.89m | $5.47m | 1 | 2 | 7,887,334 |
+| Delish | $6.14m | $4.23m | 2 | 2 | 6,136,837 |
+| Jucies | $4.24m | $2.91m | 1 | 1 | 4,237,639 |
+| Tempo | $3.44m | $2.41m | 2 | 1 | 3,439,912 |
+
+**Why x, y coordinates?**  
+To place 4 teams in a **2×2 grid** on a scatter/bubble chart:
+```
+        x=1          x=2
+y=2   [Jucies]    [Tempo]
+y=1   [Yummies]   [Delish]
+```
+Bubble **size** = Total Sales (bigger bubble = more sales).
+
+#### Top Sales People Table
+
+```excel
+=SUMIFS(sales[Amount], sales[Sales Person], person_name, people[Team], selected_team)
+```
+Or via **Power Pivot DAX measure** with team slicer context.
+
+**Sparkline Data (Last 28 Days):**  
+Columns `44565` to `44592` contain daily sales per person for sparkline mini-charts.
+
+---
+
+### 6. Product Performance Table (Row 110–168)
+
+This is the **most advanced section** of the dashboard.
+
+#### Features:
+
+| Feature | Implementation |
+|---------|---------------|
+| **Category Slicer** | `Slicer_Category` — filters Bars / Bites / Other / All |
+| **Dynamic Sort** | `sort.option.Product.table` — sort by Sales, Boxes, Shipments, or Profit % |
+| **Sort Order** | `-1` (Descending / Top to Bottom) |
+| **Filter Logic** | `=FILTER(products, IF(category="All", TRUE, products[Category]=category))` |
+
+#### Product Table Columns:
+
+| Column | Formula / Source |
+|--------|---------------|
+| Product | Product name from `products` table |
+| Sum of Amount | `=SUMIFS(sales[Amount], sales[Product], product_name)` |
+| Sum of Boxes | `=SUMIFS(sales[Boxes], sales[Product], product_name)` |
+| Total shipments | `=COUNTIFS(sales[Product], product_name)` |
+| Profit % | `=(Amount − Cost) / Amount` |
+
+#### "In Last 28 Days" Sparklines
+
+- `starting.date.for.trend` = `I4` (28 days ago from latest date)
+- Daily sales per product for last 28 days
+- Feeds **Sparkline** charts in the dashboard
+
+#### Conditional Formatting & Icons
+
+| Element | Logic |
+|---------|-------|
+| Data Bars | `amount.bar.limit` sets max value for bar scaling |
+| Profit Icon | `profit.icon.status` shows ▲/▼ arrows |
+| Highlight | Selected category rows get highlighted color |
+
+---
+
+## 🎨 Dashboard Sheet — Visual Layer
+
+The **Dashboard** sheet is purely a presentation layer. All calculations live in the **Calculation Sheet**.
+
+| Component | Source |
+|-----------|--------|
+| 🔢 Top KPI Cards | Linked cells from Calculation Sheet |
+| 🗺️ Country Sales List | Sorted geography table + map images |
+| 🫧 Team Bubble Chart | x, y, size columns → Scatter chart |
+| 👥 Top People Table | Team-filtered salespeople rankings |
+| 📦 Product Table | Sorted & filtered product list |
+| 📈 Sparklines | Last 28 days trend data |
+| 🎛️ Slicers | Category + Team interactive filters |
+
+### Conditional Formatting Used:
+- 🟢🔴 **Icon Sets** (arrows) for MoM changes
+- 📊 **Data Bars** for visual comparison in product table
+- 🎨 **Color Scales** for profit margins
+- ✨ **Highlight Rules** for selected categories
+
+---
+
+## 🖼️ Images Sheet — Design Assets
+
+| Asset | Purpose |
+|-------|---------|
+| Country Maps | 6 map icons from [mapsicon](https://github.com/djaiss/mapsicon) |
+| Color Palette | Background, Highlight, Chart colors, Text colors |
+| Sample Tile | Dashboard tile design reference |
+
+---
+
+## 📋 Complete Formula Reference
+
+| Formula | Where Used | Why |
+|---------|-----------|-----|
+| `MAX()` | Latest date | Dynamic "latest month" display |
+| `CHOOSE()` | Slicer text | Switch between 1/multiple/All |
+| `COUNTA()` | Slicer count | Count selected categories |
+| `SUMIFS()` | KPIs, product table | Conditional summing |
+| `SUMPRODUCT()` | Total Cost | Multiply Boxes × Cost per Box |
+| `COUNTIFS()` | Shipments | Count transactions per product |
+| `INDEX()` | Map images | Dynamic image lookup |
+| `MATCH()` | Sorting | Find position in sorted list |
+| `SORT()` | Product table | Dynamic array sorting (Excel 365) |
+| `FILTER()` | Product table | Show only selected category |
+| `IF()` | Slicer logic | Handle All vs specific category |
+| `TEXT()` | Formatting | Custom number display |
+| `UNIQUE()` | Dropdown lists | Remove duplicates |
+
+---
+
+## 🚀 How to Use This Dashboard
+
+1. **Open the Excel file**
+2. **Use Category Slicer** (top right) to filter Bars / Bites / Other / All
+3. **Use Team Slicer** to focus on specific team performance
+4. **Hover over KPIs** to see MoM % change
+5. **Check Product Table** — sparklines show 28-day trends
+6. **Click on Country Maps** section to see regional breakdown
+
+---
+
+## 🛠️ Technical Requirements
+
+| Requirement | Version |
+|-------------|---------|
+| Microsoft Excel | 365 or Excel 2021+ |
+| Power Pivot | Enabled (COM Add-in) |
+| Dynamic Arrays | Required for SORT, FILTER, UNIQUE |
+| OS | Windows 10/11 or macOS |
+
+---
+
+## 📁 File Structure
+
+```
+Product project.xlsx
+├── Data sheet          ← Raw data (4 tables)
+├── calculation sheet   ← All formulas & logic
+├── Dashboard           ← Visual presentation layer
+└── images              ← Design assets & color palette
+```
+
+---
+
+## 🎯 Key Takeaways (Interview Ready)
+
+> **Q: How is profit calculated?**  
+> "Cost per Box comes from the Products table via Power Pivot relationship. In the Sales table, Boxes are multiplied by Cost per Box to get Total Cost. Amount minus Cost gives Profit, and Profit divided by Amount gives Profit Percentage."
+
+> **Q: How do map images work dynamically?**  
+> "Six country map PNGs are stored in a named range called `country.images`. The calculation sheet assigns a Map ID# (1–6) to each country based on sort order. The dashboard uses `INDEX(country.images, MapID)` to pull the correct image dynamically."
+
+> **Q: How does the Category slicer work?**  
+> `COUNTA` counts selected categories. `CHOOSE` displays 'All', '(multiple)', or the specific name. `FILTER` function updates the product table to show only the selected category's products."
+
+> **Q: What are Sparklines showing?**  
+> "The calculation sheet has daily sales data for the last 28 days (columns 44565–44592). Each product gets its own 28-day trend row. The dashboard's Sparkline charts reference this data to show mini line graphs."
+
+> **Q: Why x,y coordinates for the bubble chart?**  
+> "Excel scatter charts need numeric x and y values. I assigned (1,1), (1,2), (2,1), (2,2) to create a 2×2 grid layout for the 4 teams. Bubble size represents total sales volume."
+
+---
+
+
+| Dashboard View | Description |
+|---------------|-------------|
+[![Overall](.png)
+| (https://1drv.ms/i/c/5c6c50a2fd2850a8/IQA_qXA4g69SRq9y3pCNkM9KARUTAS3PyCygllGOlyJCDXU?e=zA347h) | Full dashboard overview |
 
 ---
 
 ## 👤 Author
 
-**[Hira Nasir]**
- 🔗 https://www.linkedin.com/in/hira-nasir-448635a5
+**Hira Nasir
+Data Analyst | Excel & Power BI Enthusiast  
+[[LinkedIn](your-linkedin-url)](https://www.linkedin.com/in/hira-nasir-448635a5/) • [[GitHub](your-github-url)](https://github.com/hiranasir022)
 
-*If you found this project useful, feel free to ⭐ star the repo!*
+---
+
+*Built with ❤️ in Microsoft Excel*  
+*Dataset: Chocolate sales simulation for educational purposes*
