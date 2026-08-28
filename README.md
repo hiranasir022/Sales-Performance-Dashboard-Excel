@@ -8,13 +8,13 @@
 ## 📊 Dashboard Previews
 
 ### Excel Dashboard
-![Excel Dashboard](Product-sale-pic.png)
+![Excel Dashboard](Product-sale-dashboard.png)
 
 ### Power BI — Sales Performance Report
-![Power BI Sales Performance](images/sales-performance-report.png)
+![Power BI Sales Performance](Sales-performance-report.png)
 
 ### Power BI — Sales Trend & Forecast
-![Power BI Sales Trend](images/sales-trend-forecast.png)
+![Power BI Sales Trend](Sales-trend-and-forcast.png)
 
 ---
 
