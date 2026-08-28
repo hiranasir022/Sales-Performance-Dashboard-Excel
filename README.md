@@ -1,5 +1,5 @@
 
-# 🍫 Chocolate Sales Dashboard
+# 🍫 Chocolate Sales Dashboard (Excel and power BI)
 
 > **End-to-end business intelligence solution** built using both **Microsoft Excel** and **Microsoft Power BI**.  
 > A complete BI solution for tracking chocolate sales across 6 countries, 4 teams, and 22 products.
