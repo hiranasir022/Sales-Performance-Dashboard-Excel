@@ -1,14 +1,33 @@
 
-# 🍫 Chocolate Sales Dashboard (Excel)
+# 🍫 Chocolate Sales Dashboard
 
-> **End-to-end Excel dashboard** built using Power Pivot, advanced formulas, dynamic arrays, and custom visual design.  
-> A complete business intelligence solution for tracking chocolate sales across 6 countries, 4 teams, and 22 products.
+> **End-to-end business intelligence solution** built using both **Microsoft Excel** and **Microsoft Power BI**.  
+> A complete BI solution for tracking chocolate sales across 6 countries, 4 teams, and 22 products.
 
 ---
 
 ## 📊 Project Overview
 
-This dashboard provides a **360-degree view** of chocolate sales performance. It was built entirely in Excel (no Power BI, no external tools) to demonstrate advanced Excel capabilities including:
+This project provides a **360-degree view** of chocolate sales performance, implemented in **two platforms**:
+
+| Platform | Focus | Key Features |
+|----------|-------|--------------|
+| **Excel** | Advanced Excel capabilities, formulas, Power Pivot | Dynamic arrays, sparklines, custom formatting, slicers |
+| **Power BI** | Interactive visualizations, DAX, data modeling | Rich visuals, forecasting, drill-through, bookmarks |
+
+### Business Context
+A chocolate company sells 22 different products across 6 countries through 25 salespeople organized into 4 teams. The dashboard answers:
+- How is overall business performing? (KPIs + MoM trends)
+- Which countries are top performers? (Geography + Maps)
+- Which team and people are driving sales? (Bubble chart + rankings)
+- Which products are most profitable? (Category slicer + sparklines)
+- What are the future sales trends? (Forecasting)
+
+---
+
+## 🛠️ Excel Version
+
+Built entirely in Excel (no external tools) to demonstrate advanced Excel capabilities including:
 
 - **Power Pivot Data Modeling**
 - **Dynamic Array Functions** (Excel 365)
@@ -18,16 +37,7 @@ This dashboard provides a **360-degree view** of chocolate sales performance. It
 - **Interactive Slicers**
 - **Named Ranges & Structured References**
 
-### Business Context
-A chocolate company sells 22 different products across 6 countries through 25 salespeople organized into 4 teams. The dashboard answers:
-- How is overall business performing? (KPIs + MoM trends)
-- Which countries are top performers? (Geography + Maps)
-- Which team and people are driving sales? (Bubble chart + rankings)
-- Which products are most profitable? (Category slicer + sparklines)
-
----
-
-## 🗂️ Data Model (Star Schema)
+### Data Model (Star Schema)
 
 The project uses a **Star Schema** with 1 fact table and 3 dimension tables, connected via Power Pivot relationships.
 
@@ -40,8 +50,8 @@ The project uses a **Star Schema** with 1 fact table and 3 dimension tables, con
 
 ### Relationships
 ```
-sales[Product]     ──→ products[Product]
-sales[Geography]   ──→ locations[Geo]
+sales[Product]      ──→ products[Product]
+sales[Geography]    ──→ locations[Geo]
 sales[Sales Person] ──→ people[Sales Person]
 ```
 
@@ -52,27 +62,18 @@ Total Profit    = Total Amount − Total Cost
 Profit %        = Total Profit / Total Amount
 ```
 
----
+### Excel Formulas & Logic — Section by Section
 
-## 🧮 Formulas & Logic — Section by Section
-
-### 1. Slicer & Dynamic Text (Row 2–4)
+#### 1. Slicer & Dynamic Text (Row 2–4)
 
 | Cell | Formula | Purpose |
 |------|---------|---------|
-| `I3` | `=MAX(sales[Date])` | Gets the latest date in the dataset (e.g., 44592 = Jan 2022) |
+| `I3` | `=MAX(sales[Date])` | Gets the latest date in the dataset |
 | `I4` | `=I3-28` | Calculates date 28 days ago for "Last 28 Days" trends |
 | `E4` | `=COUNTA(C4:C6)` | Counts how many categories are selected in the slicer |
-| `F4` | `=CHOOSE(E4, C4, "(multiple)", "(All)")` | Displays the slicer status: single name, "(multiple)", or "(All)" |
+| `F4` | `=CHOOSE(E4, C4, "(multiple)", "(All)")` | Displays the slicer status |
 
-**Why CHOOSE?**  
-Dashboard dynamically shows what the user selected. If 1 category → show its name. If 2+ → show "(multiple)". If all → show "(All)".
-
----
-
-### 2. Monthly Summary Pivot (Row 6–17)
-
-This section extracts monthly totals using **Power Pivot measures** or `SUMIFS`:
+#### 2. Monthly Summary Pivot (Row 6–17)
 
 | Metric | Calculation |
 |--------|-------------|
@@ -83,13 +84,7 @@ This section extracts monthly totals using **Power Pivot measures** or `SUMIFS`:
 | Total Profit | `=Amount − Cost` |
 | Profit % | `=Profit / Amount` |
 
-> **Note:** Dates are Excel serial numbers (44197 ≈ Jan 2021, 44592 ≈ Jan 2022).
-
----
-
-### 3. KPI Cards — Top Summary (Row 19–30)
-
-Six KPI cards show overall business health with **Month-over-Month % change**:
+#### 3. KPI Cards — Top Summary (Row 19–30)
 
 | KPI | Formula | Format Code |
 |-----|---------|-------------|
@@ -107,9 +102,7 @@ MoM % = (This Month − Previous Month) / Previous Month
 - Positive = 🟢 Green arrow (business growing)
 - Negative = 🔴 Red arrow (business declining)
 
----
-
-### 4. Geography / Maps Section (Row 52–68)
+#### 4. Geography / Maps Section (Row 52–68)
 
 **6 countries** dynamically sorted by user-selected criteria:
 
@@ -128,22 +121,10 @@ MoM % = (This Month − Previous Month) / Previous Month
 ```excel
 =INDEX(country.images, calculation_sheet!P63)
 ```
-- `country.images` = Named range containing 6 country map PNGs
-- `P63` = Map ID# from sorted list
-- Result: Each country gets its correct map icon dynamically
 
-**Dashboard Display Format:**
-```
-New Zealand    $3.78 m    $1.27 m    [map icon]
-India          $3.76 m    $1.14 m    [map icon]
-UK             $3.59 m    $1.13 m    [map icon]
-```
+#### 5. Team & People Performance (Row 80–100)
 
----
-
-### 5. Team & People Performance (Row 80–100)
-
-#### Bubble Chart Data
+**Bubble Chart Data:**
 
 | Team | Sales | Profit | x | y | Size |
 |------|-------|--------|---|---|------|
@@ -153,31 +134,9 @@ UK             $3.59 m    $1.13 m    [map icon]
 | Tempo | $3.44m | $2.41m | 2 | 1 | 3,439,912 |
 
 **Why x, y coordinates?**  
-To place 4 teams in a **2×2 grid** on a scatter/bubble chart:
-```
-        x=1          x=2
-y=2   [Jucies]    [Tempo]
-y=1   [Yummies]   [Delish]
-```
-Bubble **size** = Total Sales (bigger bubble = more sales).
+To place 4 teams in a **2×2 grid** on a scatter/bubble chart.
 
-#### Top Sales People Table
-
-```excel
-=SUMIFS(sales[Amount], sales[Sales Person], person_name, people[Team], selected_team)
-```
-Or via **Power Pivot DAX measure** with team slicer context.
-
-**Sparkline Data (Last 28 Days):**  
-Columns `44565` to `44592` contain daily sales per person for sparkline mini-charts.
-
----
-
-### 6. Product Performance Table (Row 110–168)
-
-This is the **most advanced section** of the dashboard.
-
-#### Features:
+#### 6. Product Performance Table (Row 110–168)
 
 | Feature | Implementation |
 |---------|---------------|
@@ -186,33 +145,89 @@ This is the **most advanced section** of the dashboard.
 | **Sort Order** | `-1` (Descending / Top to Bottom) |
 | **Filter Logic** | `=FILTER(products, IF(category="All", TRUE, products[Category]=category))` |
 
-#### Product Table Columns:
+---
 
-| Column | Formula / Source |
-|--------|---------------|
-| Product | Product name from `products` table |
-| Sum of Amount | `=SUMIFS(sales[Amount], sales[Product], product_name)` |
-| Sum of Boxes | `=SUMIFS(sales[Boxes], sales[Product], product_name)` |
-| Total shipments | `=COUNTIFS(sales[Product], product_name)` |
-| Profit % | `=(Amount − Cost) / Amount` |
+## 📈 Power BI Version
 
-#### "In Last 28 Days" Sparklines
+The Power BI version elevates the Excel dashboard with richer interactivity, advanced DAX measures, and built-in forecasting capabilities.
 
-- `starting.date.for.trend` = `I4` (28 days ago from latest date)
-- Daily sales per product for last 28 days
-- Feeds **Sparkline** charts in the dashboard
+### Power BI Features
 
-#### Conditional Formatting & Icons
+| Feature | Description |
+|---------|-------------|
+| **Interactive Visuals** | Click any visual to cross-filter all others |
+| **Drill-Through** | Right-click on a country/team to see detailed breakdown |
+| **Bookmarks & Buttons** | Toggle between different dashboard views |
+| **Forecasting** | Built-in trend analysis with confidence intervals |
+| **Tooltips** | Rich hover cards with additional KPIs |
+| **Mobile Layout** | Optimized phone view for on-the-go insights |
 
-| Element | Logic |
-|---------|-------|
-| Data Bars | `amount.bar.limit` sets max value for bar scaling |
-| Profit Icon | `profit.icon.status` shows ▲/▼ arrows |
-| Highlight | Selected category rows get highlighted color |
+### Power BI Data Model
+
+Same **Star Schema** as Excel, loaded into Power BI via:
+- **Import Mode** (recommended for this dataset size)
+- Relationships auto-detected or manually configured
+
+### DAX Measures
+
+```dax
+// Total Sales
+Total Amount = SUM(sales[Amount])
+
+// Total Boxes
+Total Boxes = SUM(sales[Boxes])
+
+// Total Cost (using RELATED)
+Total Cost = SUMX(sales, sales[Boxes] * RELATED(products[Cost per Box]))
+
+// Total Profit
+Total Profit = [Total Amount] - [Total Cost]
+
+// Profit %
+Profit % = DIVIDE([Total Profit], [Total Amount], 0)
+
+// MoM Change
+MoM % = 
+VAR CurrentMonth = [Total Amount]
+VAR PreviousMonth = CALCULATE([Total Amount], DATEADD(sales[Date], -1, MONTH))
+RETURN DIVIDE(CurrentMonth - PreviousMonth, PreviousMonth, 0)
+
+// Amount per Box
+Amount per Box = DIVIDE([Total Amount], [Total Boxes], 0)
+```
+
+### Power BI Visuals
+
+| Visual | Purpose | Interactivity |
+|--------|---------|---------------|
+| **KPI Cards** | Top-level metrics with trend indicators | Click to filter |
+| **Bar Chart — Team Sales** | Compare 4 teams side-by-side | Cross-filter |
+| **Bar Chart — Category Performance** | Bars vs Bites vs Other | Drill-down |
+| **Bar Chart — Amount per Box by Geo** | Compare profitability by country | Tooltip details |
+| **Line Chart — Sales Trend** | Daily sales over time | Forecast overlay |
+| **Line Chart — Customer Trend** | Daily customer count | Forecast overlay |
+| **Slicers** | Team & Category filters | Multi-select |
+| **Table — Salesperson Detail** | Individual performance | Sortable |
+
+### Forecasting in Power BI
+
+The **Sales Trend & Forecast** page uses Power BI's built-in forecasting:
+
+```
+Forecast Settings:
+├── Forecast length: 7 days
+├── Confidence interval: 95%
+├── Seasonality: Auto-detected
+└── Ignore last: 0 days
+```
+
+> **Insight:** The forecast shows a potential dip in early February, suggesting the need for a promotional push.
 
 ---
 
-## 🎨 Dashboard Sheet — Visual Layer
+## 🎨 Dashboard Sheets / Pages
+
+### Excel Dashboard Sheet
 
 The **Dashboard** sheet is purely a presentation layer. All calculations live in the **Calculation Sheet**.
 
@@ -226,25 +241,33 @@ The **Dashboard** sheet is purely a presentation layer. All calculations live in
 | 📈 Sparklines | Last 28 days trend data |
 | 🎛️ Slicers | Category + Team interactive filters |
 
-### Conditional Formatting Used:
-- 🟢🔴 **Icon Sets** (arrows) for MoM changes
-- 📊 **Data Bars** for visual comparison in product table
-- 🎨 **Color Scales** for profit margins
-- ✨ **Highlight Rules** for selected categories
+### Power BI Report Pages
+
+| Page | Focus | Key Visuals |
+|------|-------|-------------|
+| **Sales Performance** | Team & individual performance | Team bar chart, salesperson table, category chart, geo chart |
+| **Sales Trend & Forecast** | Time-series analysis | Customer trend line, amount trend line, 7-day forecast |
 
 ---
 
-## 🖼️ Images Sheet — Design Assets
+## 🖼️ Visual Previews
 
-| Asset | Purpose |
-|-------|---------|
-| Country Maps | 6 map icons from [mapsicon](https://github.com/djaiss/mapsicon) |
-| Color Palette | Background, Highlight, Chart colors, Text colors |
-| Sample Tile | Dashboard tile design reference |
+### Excel Dashboard
+| Dashboard View | Description |
+|---------------|-------------|
+| (https://1drv.ms/i/c/5c6c50a2fd2850a8/IQA_qXA4g69SRq9y3pCNkM9KARUTAS3PyCygllGOlyJCDXU?e=zA347h) | Full Excel dashboard overview |
+
+### Power BI Reports
+| Report Page | Description |
+|-------------|-------------|
+| **Sales Performance Report** | Team-wise sales, category performance, amount per box by geography, salesperson rankings |
+| **Sales Trend & Forecast** | Daily customer and amount trends with 7-day forecast and confidence intervals |
 
 ---
 
 ## 📋 Complete Formula Reference
+
+### Excel Formulas
 
 | Formula | Where Used | Why |
 |---------|-----------|-----|
@@ -262,10 +285,22 @@ The **Dashboard** sheet is purely a presentation layer. All calculations live in
 | `TEXT()` | Formatting | Custom number display |
 | `UNIQUE()` | Dropdown lists | Remove duplicates |
 
+### Power BI DAX
+
+| Measure | Purpose |
+|---------|---------|
+| `SUM()` | Basic aggregation |
+| `SUMX()` | Iterative calculation (Boxes × Cost) |
+| `CALCULATE()` | Context modification |
+| `DATEADD()` | Time intelligence (MoM, YoY) |
+| `DIVIDE()` | Safe division (handles divide by zero) |
+| `RELATED()` | Pull values from related dimension tables |
+
 ---
 
-## 🚀 How to Use This Dashboard
+## 🚀 How to Use
 
+### Excel Version
 1. **Open the Excel file**
 2. **Use Category Slicer** (top right) to filter Bars / Bites / Other / All
 3. **Use Team Slicer** to focus on specific team performance
@@ -273,10 +308,19 @@ The **Dashboard** sheet is purely a presentation layer. All calculations live in
 5. **Check Product Table** — sparklines show 28-day trends
 6. **Click on Country Maps** section to see regional breakdown
 
+### Power BI Version
+1. **Open the `.pbix` file** in Power BI Desktop
+2. **Use Team Slicer** (left panel) to filter by Delish / Jucies / Tempo / Yummies
+3. **Click on any bar** in charts to cross-filter the entire page
+4. **Hover over line charts** to see daily values and forecast ranges
+5. **Right-click on a country** in visuals for drill-through options
+6. **Toggle between pages** using navigation buttons
+
 ---
 
 ## 🛠️ Technical Requirements
 
+### Excel
 | Requirement | Version |
 |-------------|---------|
 | Microsoft Excel | 365 or Excel 2021+ |
@@ -284,16 +328,35 @@ The **Dashboard** sheet is purely a presentation layer. All calculations live in
 | Dynamic Arrays | Required for SORT, FILTER, UNIQUE |
 | OS | Windows 10/11 or macOS |
 
+### Power BI
+| Requirement | Version |
+|-------------|---------|
+| Power BI Desktop | Latest (monthly updates recommended) |
+| Power BI Service | Optional (for sharing & scheduling) |
+| DAX Knowledge | Intermediate |
+| OS | Windows 10/11 |
+
 ---
 
 ## 📁 File Structure
 
 ```
-Product project.xlsx
-├── Data sheet          ← Raw data (4 tables)
-├── calculation sheet   ← All formulas & logic
-├── Dashboard           ← Visual presentation layer
-└── images              ← Design assets & color palette
+Chocolate Sales Dashboard/
+│
+├── Excel/
+│   ├── Product project.xlsx
+│   │   ├── Data sheet          ← Raw data (4 tables)
+│   │   ├── calculation sheet   ← All formulas & logic
+│   │   ├── Dashboard           ← Visual presentation layer
+│   │   └── images              ← Design assets & color palette
+│   └── README.md
+│
+└── Power BI/
+    ├── Chocolate Sales.pbix
+    │   ├── Sales Performance Report    ← Page 1
+    │   ├── Sales Trend & Forecast      ← Page 2
+    │   └── Data Model                  ← Star schema + DAX
+    └── README.md
 ```
 
 ---
@@ -301,36 +364,35 @@ Product project.xlsx
 ## 🎯 Key Takeaways (Interview Ready)
 
 > **Q: How is profit calculated?**  
-> "Cost per Box comes from the Products table via Power Pivot relationship. In the Sales table, Boxes are multiplied by Cost per Box to get Total Cost. Amount minus Cost gives Profit, and Profit divided by Amount gives Profit Percentage."
+> "Cost per Box comes from the Products table via relationship (Power Pivot in Excel, RELATED in Power BI). In the Sales table, Boxes are multiplied by Cost per Box to get Total Cost. Amount minus Cost gives Profit, and Profit divided by Amount gives Profit Percentage."
 
-> **Q: How do map images work dynamically?**  
+> **Q: How do map images work dynamically in Excel?**  
 > "Six country map PNGs are stored in a named range called `country.images`. The calculation sheet assigns a Map ID# (1–6) to each country based on sort order. The dashboard uses `INDEX(country.images, MapID)` to pull the correct image dynamically."
 
-> **Q: How does the Category slicer work?**  
-> `COUNTA` counts selected categories. `CHOOSE` displays 'All', '(multiple)', or the specific name. `FILTER` function updates the product table to show only the selected category's products."
+> **Q: How does the Category slicer work in Excel?**  
+> "`COUNTA` counts selected categories. `CHOOSE` displays 'All', '(multiple)', or the specific name. `FILTER` function updates the product table to show only the selected category's products."
 
 > **Q: What are Sparklines showing?**  
-> "The calculation sheet has daily sales data for the last 28 days (columns 44565–44592). Each product gets its own 28-day trend row. The dashboard's Sparkline charts reference this data to show mini line graphs."
+> "The calculation sheet has daily sales data for the last 28 days. Each product gets its own 28-day trend row. The dashboard's Sparkline charts reference this data to show mini line graphs."
 
 > **Q: Why x,y coordinates for the bubble chart?**  
 > "Excel scatter charts need numeric x and y values. I assigned (1,1), (1,2), (2,1), (2,2) to create a 2×2 grid layout for the 4 teams. Bubble size represents total sales volume."
 
----
+> **Q: What forecasting method does Power BI use?**  
+> "Power BI uses exponential smoothing for forecasting. It analyzes historical patterns, detects seasonality automatically, and projects future values with confidence intervals. This helps identify potential dips or peaks in sales."
 
-
-| Dashboard View | Description |
-|---------------|-------------|
-| (https://1drv.ms/i/c/5c6c50a2fd2850a8/IQA_qXA4g69SRq9y3pCNkM9KARUTAS3PyCygllGOlyJCDXU?e=zA347h) | Full dashboard overview |
+> **Q: What's the difference between Excel and Power BI for this project?**  
+> "Excel showcases advanced formula skills, Power Pivot modeling, and dynamic arrays — great for spreadsheet-based analysis. Power BI adds interactive cross-filtering, DAX time intelligence, built-in forecasting, and richer visual storytelling — better for stakeholder presentations and scalable BI."
 
 ---
 
 ## 👤 Author
 
-**Hira Nasir
+**Hira Nasir**  
 Data Analyst | Excel & Power BI Enthusiast  
-[[LinkedIn](your-linkedin-url)](https://www.linkedin.com/in/hira-nasir-448635a5/) • [[GitHub](your-github-url)](https://github.com/hiranasir022)
+[LinkedIn](https://www.linkedin.com/in/hira-nasir-448635a5/) • [GitHub](https://github.com/hiranasir022)
 
 ---
 
-*Built with ❤️ in Microsoft Excel*  
+*Built with ❤️ in Microsoft Excel & Power BI*  
 *Dataset: Chocolate sales simulation for educational purposes*
